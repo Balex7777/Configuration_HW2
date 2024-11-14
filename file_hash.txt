@@ -1,1 +1,1 @@
-14ed7a2db7a8043c3e3fc1c7e452518c17d54091
+python main.py --graph-visualizer-path ./plantuml-1.2024.7.jar --repo-path ../config --file-hash README.md

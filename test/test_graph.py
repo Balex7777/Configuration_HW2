@@ -1,31 +1,29 @@
 import pytest
 from unittest.mock import patch, mock_open, call
-import subprocess
-
-# Импортируем функции для тестирования
 from main import get_commit_dependencies, generate_puml, run_plantuml
 
 
-# Тест для get_commit_dependencies
 @patch("subprocess.run")
 def test_get_commit_dependencies(mock_run):
-    # Подготовка тестовых данных
     mock_run.return_value.stdout = "c1 p1\nc2 c1\nc3 c2 p2\n"
     repo_path = "/path/to/repo"
     file_hash = "testfilehash"
 
-    # Ожидаемый результат
     expected_dependencies = {
         "c1": ["p1"],
         "c2": ["c1"],
         "c3": ["c2", "p2"]
     }
+    expected_order = {
+        "c1": 1,
+        "c2": 2,
+        "c3": 3
+    }
 
-    # Вызов функции и проверка результата
-    dependencies = get_commit_dependencies(repo_path, file_hash)
+    dependencies, commit_order = get_commit_dependencies(repo_path, file_hash)
     assert dependencies == expected_dependencies
+    assert commit_order == expected_order
 
-    # Проверка вызова subprocess.run с правильными параметрами
     mock_run.assert_called_once_with(
         ["git", "log", "--pretty=format:%H %P", "--", file_hash],
         cwd=repo_path,
@@ -34,46 +32,33 @@ def test_get_commit_dependencies(mock_run):
     )
 
 
-# Тест для generate_puml
 @patch("builtins.open", new_callable=mock_open)
-def test_generate_puml(mock_open):
-    # Тестовые зависимости
+def test_generate_puml(mocked_open):
     dependencies = {
-        "c1": ["p1"],
-        "c2": ["c1"],
-        "c3": ["c2", "p2"]
+        'c1': ['p1'],
+        'c2': ['c1'],
+        'c3': ['c2', 'p2'],
     }
+    commit_order = {'p1': 4, 'c1': 1, 'c2': 2, 'c3': 3, 'p2': 5}
 
-    # Ожидаемое содержимое файла .puml
-    expected_output = """@startuml
-"p1" --> "c1"
-"c1" --> "c2"
-"c2" --> "c3"
-"p2" --> "c3"
-@enduml
-"""
+    expected_calls = [
+        call('@startuml\n'),
+        call('"4: p1" --> "1: c1"\n'),
+        call('"1: c1" --> "2: c2"\n'),
+        call('"2: c2" --> "3: c3"\n'),
+        call('"5: p2" --> "3: c3"\n'),
+        call('@enduml\n')
+    ]
 
-    # Вызов функции
-    generate_puml(dependencies, "output.puml")
-
-    # Проверка правильности записи в файл
-    mock_open.assert_called_once_with("output.puml", 'w')
-    handle = mock_open()
-    handle.write.assert_any_call("@startuml\n")
-    handle.write.assert_any_call('"p1" --> "c1"\n')
-    handle.write.assert_any_call('"c1" --> "c2"\n')
-    handle.write.assert_any_call('"c2" --> "c3"\n')
-    handle.write.assert_any_call('"p2" --> "c3"\n')
-    handle.write.assert_any_call("@enduml\n")
+    generate_puml(dependencies, commit_order, "output.puml")
+    mocked_open().write.assert_has_calls(expected_calls, any_order=False)
 
 
-# Тест для run_plantuml
 @patch("subprocess.run")
 def test_run_plantuml(mock_run):
-    # Вызов функции
     plantuml_path = "/path/to/plantuml.jar"
     puml_file = "output.puml"
+
     run_plantuml(plantuml_path, puml_file)
 
-    # Проверка вызова subprocess.run с правильными параметрами
     mock_run.assert_called_once_with(["java", "-jar", plantuml_path, puml_file])
