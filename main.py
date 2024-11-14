@@ -28,7 +28,6 @@ def generate_puml(dependencies, commit_order, output_file):
         f.write("@enduml\n")
 
 
-
 def run_plantuml(plantuml_path, puml_file):
     subprocess.run(["java", "-jar", plantuml_path, puml_file])
 
