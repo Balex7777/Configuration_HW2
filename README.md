@@ -19,7 +19,7 @@
 
 ### Запуск программы
 ```bash
-python main.py --graph-visualizer-path ./plantuml-1.2024.7.jar --repo-path <путь_к_репозиторию> --file-hash <путь_к_файлу>
+python main.py --graph-visualizer-path ./plantuml-1.2024.7.jar --repo-path <путь_к_репозиторию> --file <путь_к_файлу>
 ```
 
 ### Запуск тестов
