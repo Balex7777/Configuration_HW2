@@ -29,7 +29,7 @@ pytest test
 ```
 
 ### Результат тестирования
-![Tests](https://github.com/Balex7777/Configuration_HW2/blob/main/images/tests.png)
+![Tests](https://github.com/Balex7777/Configuration_HW2/blob/main/images/test.png)
 
 ### Результат работы программы
 
