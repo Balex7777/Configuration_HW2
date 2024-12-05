@@ -4,6 +4,10 @@ import os
 import json
 import zlib
 
+config = {
+    'repo_path': '/real/repo',
+    'branch': 'main'
+}
 
 def parse_object(object_hash, description=None):
     object_path = os.path.join(config['repo_path'], '.git', 'objects', object_hash[:2], object_hash[2:])
